@@ -1,0 +1,282 @@
+﻿@model InvoiceExportPDF.Data.Product
+@{
+    ViewData["Title"] = "Invoices";
+    var productList = ViewBag.Product;
+    int i = 1;
+}
+
+@*<button id="addProduct" type="button">Add</button>
+    <form asp-action="Create">
+        @if (i < productList.Count)
+        {
+
+            <div class="row">
+                <div class="col-md-4 col-sm">
+
+                    <div class="form-group">
+                        <label asp-for="Qty" class="control-label"> Product</label>
+                        <select asp-for="Id" class="form-control" asp-items="@(new SelectList(ViewBag.Product,"Id","Name"))"></select>
+                    </div>
+                </div>
+
+                <div class="col-md-4 col-sm">
+                    <div class="form-group">
+                        <label asp-for="Qty" class="control-label">Quantity</label>
+                        <input asp-for="Qty" class="form-control" />
+                        <span asp-validation-for="Qty" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+        }
+        <div class="col-md-4 col-sm" style="display: flex;  flex-direction: column-reverse; align-items: flex-end;">
+
+            <div class="form-group">
+                <input type="submit" value="Export" class="btn btn-primary" />
+            </div>
+
+        </div>
+
+    </form>*@
+<div class="row">
+    <div class="col-sm" style="display: flex; justify-content: space-between; align-items: flex-end;">
+        <div class="form-group">
+            <label id="invMonth" class="control-label"> Select Invoice Month</label>
+            <input type="month" class="form-control" id="invMonth" onchange="DatePick(this)" />
+        </div>
+        <div class="form-group">
+
+            <input type="button" class="btn btn-success" id="invoiceSubmit" value="Export Invoice" onclick="SaveProduct()" />
+        </div>
+    </div>
+</div>
+
+<body>
+    <table id="tblCustomers" class="table">
+        <thead>
+            <tr>
+                <th>Quantity</th>
+                <th>Product</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @*@foreach (Product product in productList)
+                {
+                    <tr>
+                        <td>@customer.Name</td>
+                        <td>@customer.Country</td>
+                        <td><input type="button" value="Remove" onclick="Remove(this)" /></td>
+                    </tr>
+                }*@
+        </tbody>
+        <tfoot>
+            <tr>
+                <td><input type="number" id="txtQty" class="form-control" /></td>
+                <td>
+                    <select id="ddlProducts" class="form-control">
+                        @foreach (var item in ViewBag.Product)
+                        {
+
+                            <option value=@(item.Id + "," + item.Price + "," +item.Gsttex)>@item.Name</option>
+                            @*<option value="1">One</option>
+                                <option value="2">Two</option>
+                                <option value="3">Three</option>*@
+
+                        }
+                    </select>
+                    @*<select id="ddlProducts" class="form-control" asp-items="@(new SelectList(ViewBag.Product,"Id","Name"))"></select>*@
+
+                </td>
+                <td><input type="button" class="btn btn-success" id="btnAdd" value="Add" /></td>
+            </tr>
+        </tfoot>
+    </table>
+    @*<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+        <script type="text/javascript">
+
+        </script>*@
+    @*<div id="_invoice">
+            @{ Html.RenderPartial("InvoiceProcess"); }
+        </div>
+        <div id="inv"></div>*@
+    <div id="InvoiceLists"></div>
+</body>
+
+@section Scripts
+{
+    <script>
+        var ProductArray = [];
+        const workingDates = [];
+        const holidayDates = [];
+        var isError = true;
+        $("body").on("click", "#btnAdd", function () {
+            var txtQty = $("#txtQty");
+            var txtCountryValue = $("#ddlProducts");
+            var txtCountry = $("#ddlProducts option:selected").text();
+
+            if (txtQty.val() == null || txtQty.val() == '' || txtQty.val() == 0) {
+                $("#txtQty").css('border', 'solid 1px red');
+                isError = true;
+            }
+            if ($("#ddlProducts").val() == null || $("#ddlProducts").val() == '' || $("#ddlProducts").val() == 0) {
+                $("#ddlProducts").css('border', 'solid 1px red');
+                isError = true;
+            }
+            else if (txtQty.val() != "" && $("#ddlProducts").val() != 0){
+                $("#txtQty").css('border', '1px solid #ced4da');
+                $("#ddlProducts").css('border', '1px solid #ced4da');
+                isError = false;
+            }
+
+
+            if (isError==false)
+             {
+                var tBody = $("#tblCustomers > TBODY")[0];
+                var row = tBody.insertRow(-1);
+                var cell = $(row.insertCell(-1));
+                cell.html(txtQty.val());
+                cell = $(row.insertCell(-1));
+                cell.html(txtCountry);
+                cell = $(row.insertCell(-1));
+                var obj1 = { "ProductName": txtCountry, "Quantity": txtQty.val(), "ProductID": $("#ddlProducts").val()}
+                ProductArray.push(obj1);
+                var btnRemove = $("<input />");
+                btnRemove.attr("type", "button");
+                btnRemove.attr("class", "btn btn-danger");
+                btnRemove.attr("onclick", "Remove(this);");
+                btnRemove.val("Remove");
+                cell.append(btnRemove);
+                txtQty.val("");
+                $("#ddlProducts").val('0');
+               // txtCountry
+                console.log(ProductArray);
+            }
+
+        });
+        function Remove(button) {
+            var row = $(button).closest("TR");
+            var name = $("TD", row).eq(0).html();
+            if (confirm("Do you want to delete: " + name)) {
+                var table = $("#tblCustomers")[0];
+                table.deleteRow(row[0].rowIndex);
+            }
+        };
+
+        function DatePick(month) {
+
+            var d = new Date($(month).val());
+            d = new Date(d.getFullYear(), d.getMonth(), 15);
+            var month;
+            var totalWorkdays = 0;
+            var totalHolidaydays = 0;
+            const dates = [];
+
+            function getAllDaysInMonth(year, month) {
+                const date = new Date(year, month, 1);
+
+               // const dates = [];
+
+                while (date.getMonth() === month) {
+                    dates.push(new Date(date));
+                    date.setDate(date.getDate() + 1);
+                }
+
+                return dates;
+            }
+            getAllDaysInMonth(d.getFullYear(), d.getMonth());
+
+            for (var i = 0; i < dates.length; i++) {
+                let day = dates[i].getDay();
+                if (day == 1 || day == 2 || day == 3 || day == 4 || day == 5 || day == 6)
+                {
+                    workingDates.push(dates[i]);
+                    totalWorkdays++
+                }
+                if (day == 0)
+                {
+                    holidayDates.push(dates[i]);
+                    totalHolidaydays++
+                }
+            }
+
+            console.log("WORKING DAYS = " + totalWorkdays);
+            console.log("Holiday DAYS = " + totalHolidaydays);
+            console.log("Holiday DAYS = " + holidayDates);
+            console.log("Holiday DAYS = " + workingDates);
+            const date = new Date('2022-06-04');
+
+            // 👇️ All days in March of 2022
+            console.log(getAllDaysInMonth(d.getFullYear(), d.getMonth()));
+
+        };
+
+
+
+        function SaveProduct() {
+            console.log("this is saveFee");
+    
+            //var data = JSON.stringify({
+            //    //test:"1"
+            //    BussinessDays: workingDates
+            //    //HolidaysDays: holidayDates,
+            //    //Products: ProductArray
+            //});
+            debugger
+            $.ajax({
+                url: "@Url.Content("~/Invoice/InvoiceProcess")",
+                type: "GET",
+                //contentType: "application/json",
+                //contentType: 'application/json; charset=UTF-8',
+                //dataType: 'HTML',
+                dataType: 'JSON',
+                data: {
+                    BussinessDays: JSON.stringify(workingDates),
+                    HolidaysDays: JSON.stringify(holidayDates),
+                    Products: JSON.stringify(ProductArray) },
+                success: function (result) {
+                 //   alert(data);
+                    //$('#InvoiceLists').html(result);
+                    window.location.href = result.redirectUrl;
+                    //data, status
+                   // $("#InvoiceLists").load("/Invoice/InvoiceProcess");
+                },
+                error: function (status) {
+                    alert('error' + status);
+                }
+            });
+
+            ////showLoader();
+            //if (isError == false) {
+            //    if (lstFees != null) {
+            //        $.ajax({
+            //            contentType: 'application/json; charset=utf-8',
+            //            dataType: 'json',
+            //            type: "POST",
+            //            url: "/CoveredEntity/SaveFeeState",
+            //            data: JSON.stringify(lstFees),
+            //            success: function (resp) {
+            //                if (objForm != null) {
+            //                    SaveInsuranceExclusion(objForm);
+
+
+            //                }
+            //            },
+            //            error: function (err) {
+            //                console.log(err);
+            //            }
+
+            //        });
+            //    }
+            //    else {
+            //        if (objForm != null)
+            //            onFormSubmit(objForm);
+            //    }
+            //}
+
+
+            //return !isError;
+
+        }
+
+    </script>
+}

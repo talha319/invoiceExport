@@ -1,0 +1,63 @@
+﻿@*@model IEnumerable<ProductsDetailsInvoice>*@
+
+@{
+    //distict Invoice Id
+    //distinct Product ID of that invoice
+    //select that specific invoice Product ID's and sum there qty and get prices
+    //var distictInvIds = Model.Distinct().Select(x => x.InvoiceNumber).ToList();
+    var invoicesList = ViewBag.MyList;
+}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayName("Product Name")
+            </th>
+            <th>
+                @Html.DisplayName("Quantity")
+            </th>
+            <th>
+                @Html.DisplayName("Price")
+            </th>
+            <th>
+                @Html.DisplayName("Invoice Number")
+            </th>
+            <th>
+                @Html.DisplayName("Date Invoice")
+            </th>
+            <th>
+                @Html.DisplayName("Total Invoice Price")
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in invoicesList)
+        {
+                <tr>
+                    <td>
+                        @item.Name
+                    </td>
+                    <td>
+                        @item.Quantity
+                    </td>
+                    <td>
+                        @item.Price
+                    </td>
+                    <td>
+                        @item.InvoiceNumber
+                    </td>
+                    <td>
+                        @item.DateInvoice
+                    </td>
+                    <td>
+                        @item.TotalPrice
+                    </td>
+                    <td>
+                        @Html.ActionLink("Print Invoice", "PrintInvoice","Invoice", new { itemDetail=item})
+                    </td>
+                </tr>
+        }
+    </tbody>
+</table>

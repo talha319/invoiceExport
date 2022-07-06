@@ -1,0 +1,121 @@
+﻿@model IEnumerable<ProductsDetailsInvoice>
+@{
+    Layout = null;
+    var invoicesList = ViewBag.MyList;
+
+    var InvoiceNumberList = Model.GroupBy(a => a.InvoiceNumber);
+
+
+}
+<style>
+    th, td {
+        border-bottom: 1px solid #ddd;
+        text-align: left;
+    }
+</style>
+<h1>SALES TAX INVOICE</h1>
+@foreach (var invoice in InvoiceNumberList)
+{
+    decimal TotalPriceInvoice = 0;
+    <table class="table" style="width:100%">
+        <tr>
+            <td>Supplier's Name: </td>
+            <td>
+                HASEEN POLYMERS INDUSTRIES
+                PVT LTD.
+            </td>
+
+        </tr>
+        <tr>
+            <td>Address:</td>
+            <td>
+                UMAR HASEEN STREET, 1.1 KM KITAR
+                BUND ROAD, INDUSTRIAL AREA
+                THOKAR NIAZ BAIG, MULTAN ROAD
+                LAHORE .
+
+            </td>
+        </tr>
+    </table>
+    <hr />
+
+    <table class="table" style="width:100%">
+        <thead>
+            <tr>
+                <th>
+                    @Html.DisplayName("Product Name")
+                </th>
+                <th>
+                    @Html.DisplayName("Quantity")
+                </th>
+                <th>
+                    @Html.DisplayName("Date Invoice")
+                </th>
+                <th>
+                    @Html.DisplayName("Invoice Number")
+                </th>
+                <th>
+                    @Html.DisplayName("Price")
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in invoice)
+            {
+                {
+                    TotalPriceInvoice += item.Price;
+                }
+                <tr style="height: 50px;">
+                    <td>
+                        @item.Name
+                    </td>
+                    <td>
+                        @item.Quantity
+                    </td>
+                    <td>
+
+                        @item.DateInvoice.ToShortDateString()
+                    </td>
+                    <td>
+                        @item.InvoiceNumber
+                    </td>
+                    <td>
+                        @item.Price
+                    </td>
+                    
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="" style="overflow: auto;" >
+        <div style=" float: right; margin-top:5px">
+            Total Price =   @TotalPriceInvoice
+
+        </div>
+        
+    </div>
+
+    <br /><br /><br /><hr />
+
+}
+
+@*<table>
+        <tr>
+            <td>Supplier's Name:</td>
+            <td>
+                HASEEN POLYMERS INDUSTRIES
+                PVT LTD.
+            </td>
+        </tr>
+        <tr>
+            <td>Address::</td>
+            <td>
+                UMAR HASEEN STREET, 1.1 KM KITAR
+                BUND ROAD, INDUSTRIAL AREA
+                THOKAR NIAZ BAIG, MULTAN ROAD
+                LAHORE .
+
+            </td>
+        </tr>
+    </table>*@
